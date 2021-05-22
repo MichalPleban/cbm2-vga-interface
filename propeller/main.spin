@@ -44,17 +44,15 @@ PRI init | x, y
               mode := 0
               graph := 0
               longfill(@cbm_screen, $20202020, 500)
-'              return
-
-'              repeat x from 0 to 31
-'                  repeat y from 0 to 7
-'                      cbm_screen[(x+4) * 2 + (y+2) * 160] := x + y * 32
-'              return
-
-              cursor_pos := 201
-'              mode := 1
-'              graph := 1
               longfill(@ibm_screen, $0A200A20, 1000)
+              return
+
+              repeat x from 0 to 31
+                  repeat y from 0 to 7
+                      cbm_screen[(x+4) * 2 + (y+2) * 160] := x + y * 32
+              return
+
+              mode := 1
               repeat x from 0 to 15
                   repeat y from 0 to 15
                       ibm_screen[x*6+y*160] := "<"

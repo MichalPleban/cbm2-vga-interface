@@ -39,6 +39,8 @@ cog
               mov cbm_ptr, cbm_screen
               add cbm_ptr, bus_addr
               wrbyte bus_data, cbm_ptr
+              cmp bus_addr, #0              wz
+              if_e  wrbyte mode_value, mode_ptr
               jmp #cog
 
 io_write
@@ -94,6 +96,7 @@ tpi_port      long $0E06
 cursor_pos    long 0
 graph_ptr     long 0
 mode_ptr      long 0
+mode_value    long 0
 
 tmp           long $07FF
 
