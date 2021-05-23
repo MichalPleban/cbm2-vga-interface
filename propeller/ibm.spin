@@ -88,7 +88,6 @@ loop2
               add read_ptr, #4
               add write_ptr, #4
               djnz write_cnt, #loop2
-              jmp #loop
               mov write_cnt, #40
               jmp #loop1
 
