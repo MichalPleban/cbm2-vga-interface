@@ -2,16 +2,17 @@ CON
               CLOCK = $1423D70A            ' 25.175 MHz
 
 
-PUB start(color_buffer, frame_buffer_1, frame_buffer_2, frame_buffer_3, pointer_1, pointer_2, pointer_3, cursor_blink)
+PUB start(_color_buffer, _frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointer_2, _pointer_3, _cursor_blink, _cursor_mode)
 
-              longfill(@color_start, color_buffer, 1)
-              longfill(@frame_start_1, frame_buffer_1, 1)
-              longfill(@frame_start_2, frame_buffer_2, 1)
-              longfill(@frame_start_3, frame_buffer_3, 1)
-              longfill(@src_addr_1, pointer_1, 1)
-              longfill(@src_addr_2, pointer_2, 1)
-              longfill(@src_addr_3, pointer_3, 1)
-              longfill(@cursor_show, cursor_blink, 1)
+              longfill(@color_start, _color_buffer, 1)
+              longfill(@frame_start_1, _frame_buffer_1, 1)
+              longfill(@frame_start_2, _frame_buffer_2, 1)
+              longfill(@frame_start_3, _frame_buffer_3, 1)
+              longfill(@src_addr_1, _pointer_1, 1)
+              longfill(@src_addr_2, _pointer_2, 1)
+              longfill(@src_addr_3, _pointer_3, 1)
+              longfill(@cursor_blink, _cursor_blink, 1)
+              longfill(@cursor_mode, _cursor_mode, 1)
               cognew(@cog, 0)
 
               return
@@ -78,11 +79,7 @@ picture
               call #vsync_lines
 
               ' Animate the cursor
-              add cursor_cnt, #1
-              cmp cursor_cnt, #20               wz
-              if_z  mov cursor_cnt, #0
-              if_z  xor cursor_value, #1
-              wrlong cursor_value, cursor_show
+              call #cursor
 
               jmp #picture
 
@@ -160,6 +157,29 @@ vsync_lines_ret
 
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+              ' Animate the cursor
+cursor
+              rdbyte cursor_type, cursor_mode
+              cmp cursor_type, #$00             wz
+              if_z  mov cursor_value, #1
+              if_z  jmp #cursor_finish
+              cmp cursor_type, #$20             wz
+              if_z  mov cursor_value, #0
+              if_z  jmp #cursor_finish
+
+              cmp cursor_type, #$60             wz
+              if_z  add cursor_cnt, #1
+              add cursor_cnt, #1
+              cmp cursor_cnt, #40               wz
+              if_z  mov cursor_cnt, #0
+              if_z  xor cursor_value, #1
+cursor_finish
+              wrlong cursor_value, cursor_blink
+cursor_ret
+              ret
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 frqa_value    long CLOCK
 
@@ -198,9 +218,10 @@ src_addr_1    long 0
 src_addr_2    long 0
 src_addr_3    long 0
 
-cursor_show   long 0
+cursor_blink  long 0
 cursor_cnt    long 0
-cursor_value  long 1
+cursor_value  long 0
+cursor_mode   long 0
 
 segment_count res 1
 line_count    res 1
@@ -214,5 +235,4 @@ frame_value   res 1
 
 trans_addr    res 1
 
-tmp1          res 1
-tmp2          res 2
+cursor_type   res 1

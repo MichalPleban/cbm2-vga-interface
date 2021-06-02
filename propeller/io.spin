@@ -1,9 +1,10 @@
-PUB start(_cbm_screen, _cursor_pos, _graph, _mode)
+PUB start(_cbm_screen, _cursor_pos, _graph, _mode, _cursor_mode)
 
               longfill(@cbm_screen, _cbm_screen, 1)
               longfill(@cursor_pos, _cursor_pos, 1)
               longfill(@graph_ptr, _graph, 1)
               longfill(@mode_ptr, _mode, 1)
+              longfill(@cursor_mode, _cursor_mode, 1)
               cognew(@cog, 0)
 
               return
@@ -52,6 +53,8 @@ crtc_regwr
               jmp #cog
 
 crtc_valwr
+              cmp crtc_register, #10        wz
+              if_e  jmp #:crtc_10
               cmp crtc_register, #14        wz
               if_e  jmp #:crtc_14
               cmp crtc_register, #15        wz
@@ -67,6 +70,11 @@ crtc_valwr
 
 :crtc_14
               mov cursor_hi, bus_data
+              jmp #:cursor
+
+:crtc_10
+              and bus_data, #$60
+              wrlong bus_data, cursor_mode
               jmp #:cursor
 
 tpi_write
@@ -97,6 +105,8 @@ cursor_pos    long 0
 graph_ptr     long 0
 mode_ptr      long 0
 mode_value    long 0
+
+cursor_mode   long 0
 
 tmp           long $07FF
 
