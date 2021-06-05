@@ -1,7 +1,8 @@
-PUB start(_ibm_screen, _mode)
+PUB start(_ibm_screen, _mode, _cursor_mode)
 
               longfill(@ibm_screen, _ibm_screen, 1)
               longfill(@mode_ptr, _mode, 1)
+              longfill(@cursor_mode, _cursor_mode, 1)
               cognew(@cog, 0)
 
               return
@@ -44,6 +45,10 @@ cmd_write
               if_e jmp #cmd_clear
               cmp bus_data, #$83          wz
               if_e jmp #cmd_scroll
+              cmp bus_data, #$84          wz
+              if_e jmp #cmd_cursoron
+              cmp bus_data, #$85          wz
+              if_e jmp #cmd_cursoroff
 
               jmp #loop
 
@@ -98,6 +103,15 @@ data_write
               if_ne  add write_ptr, #1
               jmp #loop
 
+              ' Command 84 - cursor ON
+cmd_cursoron
+              wrlong cursor_on, cursor_mode
+              jmp #loop
+
+              ' Command 85 - cursor OFF
+cmd_cursoroff
+              wrlong cursor_off, cursor_mode
+              jmp #loop
 
 ibm_screen    long 0
 port_value    long $00000000
@@ -105,7 +119,7 @@ port_mask     long $80000000
 addr_mask     long $0FFF
 
 cmd_port      long $0ABC      ' 55996
-data_port     long $0ABD
+data_port     long $0ABD      ' 55997
 
 mode_ptr      long 0
 mode_cbm      long 0
@@ -118,6 +132,10 @@ clear_value   long $0A200A20
 clear_cnt     long 1000
 
 scroll_cnt    long 960
+
+cursor_mode   long 0
+cursor_on     long $60
+cursor_off    long $20
 
 bus_addr      res 1
 bus_data      res 1

@@ -17289,11 +17289,12 @@ high speed (Philips)</description>
 </net>
 <net name="/EXTRES" class="0">
 <segment>
-<wire x1="33.02" y1="76.2" x2="43.18" y2="76.2" width="0.1524" layer="91"/>
+<wire x1="31.75" y1="76.2" x2="43.18" y2="76.2" width="0.1524" layer="91"/>
 <wire x1="43.18" y1="76.2" x2="43.18" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="43.18" y1="99.06" x2="5.08" y2="99.06" width="0.1524" layer="91"/>
 <label x="35.56" y="76.2" size="1.778" layer="95"/>
 <pinref part="JP1" gate="A" pin="2"/>
+<pinref part="MAINBOARD" gate="A" pin="14"/>
 </segment>
 </net>
 <net name="N$28" class="0">
@@ -17310,10 +17311,11 @@ high speed (Philips)</description>
 </net>
 <net name="/RES" class="0">
 <segment>
-<wire x1="22.86" y1="71.12" x2="10.16" y2="71.12" width="0.1524" layer="91"/>
+<wire x1="24.13" y1="71.12" x2="10.16" y2="71.12" width="0.1524" layer="91"/>
 <wire x1="10.16" y1="71.12" x2="10.16" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="D1" gate="G$1" pin="C"/>
 <label x="17.78" y="71.12" size="1.778" layer="95" rot="MR0"/>
+<pinref part="MAINBOARD" gate="A" pin="17"/>
 </segment>
 </net>
 </nets>

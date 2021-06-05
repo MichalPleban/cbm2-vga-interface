@@ -33,6 +33,8 @@ cog
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 picture
+              call #external
+
               ' Prefill three buffer frames
               mov trans_addr, #0
               wrlong trans_addr, src_addr_1
@@ -167,10 +169,10 @@ cursor
               if_z  mov cursor_value, #0
               if_z  jmp #cursor_finish
 
-              cmp cursor_type, #$60             wz
+              cmp cursor_type, #$40             wz
               if_z  add cursor_cnt, #1
               add cursor_cnt, #1
-              cmp cursor_cnt, #40               wz
+              cmp cursor_cnt, #20               wz
               if_z  mov cursor_cnt, #0
               if_z  xor cursor_value, #1
 cursor_finish
@@ -178,6 +180,20 @@ cursor_finish
 cursor_ret
               ret
 
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+external
+              ' Check if external input is connected
+              mov display_ena, ina
+              test display_ena, external_test           wz
+              if_z  jmp #external_end
+              mov dira, #0
+              jmp #external
+external_end
+              mov dira, #$FF
+external_ret
+              ret
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -210,6 +226,8 @@ color_sync    long $00010203
 color_test    long $07030307
 pixels_test   long $FF55AA00
 
+external_test long $40000000
+
 color_start   long 0
 frame_start_1 long 0
 frame_start_2 long 0
@@ -236,3 +254,5 @@ frame_value   res 1
 trans_addr    res 1
 
 cursor_type   res 1
+
+display_ena   res 1

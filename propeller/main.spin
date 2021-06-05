@@ -25,7 +25,7 @@ PUB main
 
               init
               start
-              repeat
+              clock
 
 PRI start
 
@@ -35,7 +35,7 @@ PRI start
               convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_3, @pointer_3, @cursor_pos, @cursor_blink, @mode, @graph)
               color.start(@cbm_screen, @ibm_screen, @color_buffer, @mode)
               io.start(@cbm_screen, @cursor_pos, @graph, @mode, @cursor_mode)
-              ibm.start(@ibm_screen, @mode)
+              ibm.start(@ibm_screen, @mode, @cursor_mode)
               return
 
 PRI init | x, y
@@ -59,6 +59,14 @@ PRI init | x, y
 '                      ibm_screen[x*6+y*160+1] := x + 16 * y
 '                      ibm_screen[x*6+y*160+3] := x + 16 * y
 '              return
+
+PRI clock
+              dira[28] := 1
+              repeat
+                  outa[28] := 1
+                  waitcnt(cnt + clkfreq / 100)
+                  outa[28] := 0
+                  waitcnt(cnt + clkfreq / 100)
 
 DAT
 

@@ -303,3 +303,5 @@ display_undr  res 1
 display_blank res 1
 
 char_number   res 1
+
+tmp           res 1
