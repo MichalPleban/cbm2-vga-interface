@@ -1,8 +1,8 @@
-PUB start(_ibm_screen, _mode, _cursor_mode)
+PUB start(_ibm_screen, _config)
 
               longfill(@ibm_screen, _ibm_screen, 1)
-              longfill(@mode_ptr, _mode, 1)
-              longfill(@cursor_mode, _cursor_mode, 1)
+              longfill(@mode_ptr, _config+1*4, 1)
+              longfill(@cursor_mode, _config+5*4, 1)
               cognew(@cog, 0)
 
               return

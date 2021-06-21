@@ -1,5 +1,5 @@
 
-PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointer, _cursor_pos, _cursor_blink, _mode, _graph, _blink)
+PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointer, _config)
 
               longfill(@cbm_screen, _cbm_screen, 1)
               longfill(@cbm_font, _cbm_font, 1)
@@ -7,11 +7,11 @@ PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointe
               longfill(@ibm_font, _ibm_font, 1)
               longfill(@frame_buffer, _frame_buffer, 1)
               longfill(@ptr_addr, _pointer, 1)
-              longfill(@cursor_addr, _cursor_pos, 1)
-              longfill(@cursor_show, _cursor_blink, 1)
-              longfill(@mode_ptr, _mode, 1)
-              longfill(@graph_ptr, _graph, 1)
-              longfill(@blink_ptr, _blink, 1)
+              longfill(@cursor_addr, _config+0*4, 1)
+              longfill(@cursor_show, _config+3*4, 1)
+              longfill(@mode_ptr, _config+1*4, 1)
+              longfill(@graph_ptr, _config+2*4, 1)
+              longfill(@blink_ptr, _config+4*4, 1)
               cognew(@cog, 0)
 
               return

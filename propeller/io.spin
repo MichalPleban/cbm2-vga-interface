@@ -1,10 +1,10 @@
-PUB start(_cbm_screen, _cursor_pos, _graph, _mode, _cursor_mode)
+PUB start(_cbm_screen, _config)
 
               longfill(@cbm_screen, _cbm_screen, 1)
-              longfill(@cursor_pos, _cursor_pos, 1)
-              longfill(@graph_ptr, _graph, 1)
-              longfill(@mode_ptr, _mode, 1)
-              longfill(@cursor_mode, _cursor_mode, 1)
+              longfill(@cursor_pos, _config+0*4, 1)
+              longfill(@graph_ptr, _config+2*4, 1)
+              longfill(@mode_ptr, _config+1*4, 1)
+              longfill(@cursor_mode, _config+5*4, 1)
               cognew(@cog, 0)
 
               return

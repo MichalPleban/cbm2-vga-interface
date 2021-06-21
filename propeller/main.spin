@@ -7,9 +7,7 @@ VAR
               long  frame_buffer_2[640]
               long  frame_buffer_3[640]
               long  pointer_1, pointer_2, pointer_3
-              long  cursor_pos, cursor_blink, cursor_mode, blink
-              long  mode
-              long  graph
+              long  config[6]
               byte  cbm_screen[2048]
               byte  ibm_screen[4096]
 
@@ -27,22 +25,22 @@ PUB main
 
 PRI start
 
-              display.start(@frame_buffer_1, @frame_buffer_2, @frame_buffer_3, @pointer_1, @pointer_2, @pointer_3, @cursor_blink, @cursor_mode, @blink)
-              convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_1, @pointer_1, @cursor_pos, @cursor_blink, @mode, @graph, @blink)
-              convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_2, @pointer_2, @cursor_pos, @cursor_blink, @mode, @graph, @blink)
-              convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_3, @pointer_3, @cursor_pos, @cursor_blink, @mode, @graph, @blink)
-              io.start(@cbm_screen, @cursor_pos, @graph, @mode, @cursor_mode)
-              ibm.start(@ibm_screen, @mode, @cursor_mode)
+              display.start(@frame_buffer_1, @frame_buffer_2, @frame_buffer_3, @pointer_1, @pointer_2, @pointer_3, @config)
+              convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_1, @pointer_1, @config)
+              convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_2, @pointer_2, @config)
+              convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_3, @pointer_3, @config)
+              io.start(@cbm_screen, @config)
+              ibm.start(@ibm_screen, @config)
               return
 
 PRI init | x, y
 
-              cursor_pos := 0
-              mode := 0
-              graph := 0
-              cursor_blink := 0
-              blink := 0
-              cursor_mode := $60
+              config[0] := 0    ' Cursor position
+              config[1] := 0    ' IBM mode
+              config[2] := 0    ' Graphics mode
+              config[3] := 0    ' Cursor blink indicator
+              config[4] := 0    ' Character blink indicator
+              config[5] := $40  ' Cursor mode
               longfill(@cbm_screen, $20202020, 500)
               longfill(@ibm_screen, $07200720, 1000)
 

@@ -2,7 +2,7 @@ CON
               CLOCK = $1423D70A            ' 25.175 MHz
 
 
-PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointer_2, _pointer_3, _cursor_blink, _cursor_mode, _blink)
+PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointer_2, _pointer_3, _config)
 
               longfill(@frame_start_1, _frame_buffer_1, 1)
               longfill(@frame_start_2, _frame_buffer_2, 1)
@@ -10,9 +10,9 @@ PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointe
               longfill(@src_addr_1, _pointer_1, 1)
               longfill(@src_addr_2, _pointer_2, 1)
               longfill(@src_addr_3, _pointer_3, 1)
-              longfill(@cursor_blink, _cursor_blink, 1)
-              longfill(@cursor_mode, _cursor_mode, 1)
-              longfill(@blink_ptr, _blink, 1)
+              longfill(@cursor_blink, _config+3, 1)
+              longfill(@cursor_mode, _config+5, 1)
+              longfill(@blink_ptr, _config+4, 1)
               cognew(@cog, 0)
 
               return
