@@ -1,5 +1,5 @@
 
-PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointer, _cursor_pos, _cursor_blink, _mode, _graph)
+PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointer, _cursor_pos, _cursor_blink, _mode, _graph, _blink)
 
               longfill(@cbm_screen, _cbm_screen, 1)
               longfill(@cbm_font, _cbm_font, 1)
@@ -11,6 +11,7 @@ PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointe
               longfill(@cursor_show, _cursor_blink, 1)
               longfill(@mode_ptr, _mode, 1)
               longfill(@graph_ptr, _graph, 1)
+              longfill(@blink_ptr, _blink, 1)
               cognew(@cog, 0)
 
               return
@@ -37,6 +38,7 @@ cog
 
               ' Read cursor position and visibility
               rdlong crsr_visible, cursor_show
+              rdlong blink_visible, blink_ptr
               and crsr_visible, #1                wz
               if_nz rdlong cursor_ptr, cursor_addr
               if_z  mov cursor_ptr, #0
@@ -65,7 +67,8 @@ cbm_line
               mov font_start, cbm_font
               mov char_count, #40
 :loop
-              mov display_crsr, #0
+              mov display_xor, #0
+              mov display_or, #0
 
               ' Read two bytes
               rdbyte char_value_1, src_ptr
@@ -75,11 +78,19 @@ cbm_line
 
               ' Handle cursor display
               cmp char_number, cursor_ptr           wz
-              if_z  mov display_crsr, char_mask_1
+              if_z  mov display_xor, char_mask_1
               add char_number, #1
               cmp char_number, cursor_ptr           wz
-              if_z  mov display_crsr, char_mask_2
+              if_z  mov display_xor, char_mask_2
               add char_number, #1
+
+              ' Handle character reverse
+              mov reverse_1, char_value_1
+              and reverse_1, #$80                   wz
+              if_nz xor display_xor, char_mask_1
+              mov reverse_2, char_value_2
+              and reverse_2, #$80                   wz
+              if_nz xor display_xor, char_mask_2
 
               ' Prepare characters
               cmp do_graph, #1                      wz
@@ -108,7 +119,8 @@ ibm_line
               mov font_start, ibm_font
               mov char_count, #40
 :loop
-              mov display_crsr, #0
+              mov display_xor, #0
+              mov display_or, #0
 
               ' Read two words
               rdword char_value_1, src_ptr
@@ -118,13 +130,37 @@ ibm_line
 
               ' Handle cursor display
               cmp char_number, cursor_ptr           wz
-              if_z  mov display_crsr, char_mask_1
+              if_z  mov display_xor, char_mask_1
               add char_number, #1
               cmp char_number, cursor_ptr           wz
-              if_z  mov display_crsr, char_mask_2
+              if_z  mov display_xor, char_mask_2
               add char_number, #1
 
-              ' Prepare characters and attributes
+              ' Invert characters
+              mov tmp_1, char_value_1
+              shr tmp_1, #8
+              and tmp_1, #$77
+              cmp tmp_1, #$70                       wz
+              if_e  xor display_xor, char_mask_1
+              mov tmp_2, char_value_2
+              shr tmp_2, #8
+              and tmp_2, #$77
+              cmp tmp_2, #$70                       wz
+              if_e  xor display_xor, char_mask_2
+
+              ' High intensity characters
+              mov tmp_1, char_value_1
+              shr tmp_1, #8
+              and tmp_1, #$08
+              cmp tmp_1, #$08                       wz
+              if_e  or display_or, char_int_1
+              mov tmp_2, char_value_2
+              shr tmp_2, #8
+              and tmp_2, #$08
+              cmp tmp_2, #$08                       wz
+              if_e  or display_or, char_int_2
+
+              ' Underline characters
               mov underline_1, char_value_1
               shr underline_1, #8
               and underline_1, #$07
@@ -132,20 +168,21 @@ ibm_line
               shr underline_2, #8
               and underline_2, #$07
 
+              ' Blank characters
               mov blank_1, char_value_1
               and blank_1, blank_mask
               cmp blank_1, #0                        wz
               if_e  mov blank_1, #1
               if_ne mov blank_1, char_value_1
               if_ne shr blank_1, #15
-              if_ne and blank_1, crsr_visible
+              if_ne and blank_1, blink_visible
               mov blank_2, char_value_2
               and blank_2, blank_mask
               cmp blank_2, #0                        wz
               if_e  mov blank_2, #1
               if_ne mov blank_2, char_value_2
               if_ne shr blank_2, #15
-              if_ne and blank_2, crsr_visible
+              if_ne and blank_2, blink_visible
 
               and char_value_1, #$FF
               and char_value_2, #$FF
@@ -171,14 +208,14 @@ draw_chars
               cmp underline_1, #1               wz
               if_e  or display_undr, char_mask_1
               cmp underline_2, #1               wz
-              if_e  or display_undr, char_mask_2u
+              if_e  or display_undr, char_mask_2
 
               ' Handle character blanking
-              mov display_blank, #0
+              mov display_and, #0
               cmp blank_1, #1                   wz
-              if_ne or display_blank, char_mask_1
+              if_ne or display_and, char_mask_1
               cmp blank_2, #1                   wz
-              if_ne or display_blank, char_mask_2
+              if_ne or display_and, char_mask_2
 
               ' Write 4 x 4 longs
               mov font_count, #4
@@ -197,7 +234,7 @@ draw_chars
               ' Line #14 - draw underline
               cmp font_count, #1                wz
               if_e  or display_value, display_undr
-'              if_e  and display_value, display_blank
+'              if_e  and display_value, display_and
               wrlong display_value, dst_ptr
               add dst_ptr, #160
               call #translate
@@ -231,9 +268,9 @@ translate
 
               shl display_tmp, #16
               or display_value, display_tmp
-              and display_value, display_blank
-              or display_value, display_mask
-              xor display_value, display_crsr
+              and display_value, display_and
+              or display_value, display_or
+              xor display_value, display_xor
 translate_ret
               ret
 
@@ -253,12 +290,14 @@ ptr_addr      long 0
 cursor_addr   long 0
 cursor_show   long 0
 
+blink_ptr     long 0
+
 dst_sub       long 2556
 ptr_null      long $FFFFFFFF
-display_mask  long $AAAA0000
 char_mask_1   long $00005555
 char_mask_2   long $55550000
-char_mask_2u  long $FFFF0000
+char_int_1    long $0000AAAA
+char_int_2    long $AAAA0000
 
 blank_mask    long $7700
 
@@ -276,6 +315,8 @@ font_ptr_2    res 1
 crsr_visible  res 1
 cursor_ptr    res 1
 
+blink_visible res 1
+
 line_count    res 1
 char_count    res 1
 font_count    res 1
@@ -287,6 +328,8 @@ font_value_2  res 1
 
 underline_1   res 1
 underline_2   res 1
+reverse_1     res 1
+reverse_2     res 1
 cursor_1      res 1
 cursor_2      res 1
 blank_1       res 1
@@ -298,10 +341,12 @@ font_tmp_1    res 1
 font_tmp_2    res 1
 display_tmp   res 1
 
-display_crsr  res 1
+display_xor   res 1
 display_undr  res 1
-display_blank res 1
+display_and   res 1
+display_or    res 1
 
 char_number   res 1
 
-tmp           res 1
+tmp_1         res 1
+tmp_2         res 1

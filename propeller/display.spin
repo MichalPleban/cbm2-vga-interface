@@ -2,9 +2,8 @@ CON
               CLOCK = $1423D70A            ' 25.175 MHz
 
 
-PUB start(_color_buffer, _frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointer_2, _pointer_3, _cursor_blink, _cursor_mode)
+PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointer_2, _pointer_3, _cursor_blink, _cursor_mode, _blink)
 
-              longfill(@color_start, _color_buffer, 1)
               longfill(@frame_start_1, _frame_buffer_1, 1)
               longfill(@frame_start_2, _frame_buffer_2, 1)
               longfill(@frame_start_3, _frame_buffer_3, 1)
@@ -13,6 +12,7 @@ PUB start(_color_buffer, _frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _poi
               longfill(@src_addr_3, _pointer_3, 1)
               longfill(@cursor_blink, _cursor_blink, 1)
               longfill(@cursor_mode, _cursor_mode, 1)
+              longfill(@blink_ptr, _blink, 1)
               cognew(@cog, 0)
 
               return
@@ -47,9 +47,6 @@ picture
               mov line_count, #33+40
               call #blank_lines
 
-              ' Reset pointers
-              mov color_ptr, color_start
-
               mov segment_count, #8
 :loop
               ' Draw buffer 1
@@ -82,6 +79,7 @@ picture
 
               ' Animate the cursor
               call #cursor
+              call #blink
 
               jmp #picture
 
@@ -93,7 +91,6 @@ display_segment
 :loop
               call #display_line
               djnz line_count, #:loop
-              add color_ptr, #160
 display_segment_ret
               ret
 
@@ -108,11 +105,9 @@ display_line
               sub frame_ptr, #4
               mov vscl, vscl_pixels
 :loop
-              rdlong color_value, color_ptr
-              add color_ptr, #4
               add frame_ptr, #4
               rdlong frame_value, frame_ptr
-              waitvid color_value, frame_value
+              waitvid color_test, frame_value
               djnz char_count, #:loop
 
               mov vscl, #16            ' Horizontal front porch
@@ -120,7 +115,6 @@ display_line
               mov vscl, #96            ' Horizontal sync
               waitvid color_sync, #2
 
-              sub color_ptr, #160
               add frame_ptr, #4
 display_line_ret
               ret
@@ -180,6 +174,17 @@ cursor_finish
 cursor_ret
               ret
 
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+              ' Provide the blinking interval
+blink
+              add blink_cnt, #1
+              cmp blink_cnt, #20               wz
+              if_z  mov blink_cnt, #0
+              if_z  xor blink_value, #1
+              wrlong blink_value, blink_ptr
+blink_ret
+              ret
+
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -223,7 +228,7 @@ vscl_sync     long %000000000000_00000000_000000000000
               '   3 - H & V sync
 color_sync    long $00010203
 
-color_test    long $07030307
+color_test    long $FF035703
 pixels_test   long $FF55AA00
 
 external_test long $40000000
@@ -240,6 +245,10 @@ cursor_blink  long 0
 cursor_cnt    long 0
 cursor_value  long 0
 cursor_mode   long 0
+
+blink_ptr     long 0
+blink_value   long 0
+blink_cnt     long 0
 
 segment_count res 1
 line_count    res 1
