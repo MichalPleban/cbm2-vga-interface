@@ -22,6 +22,8 @@ This way the board does not need any changes in the KERNAL video routines. Also,
 
 ## Advanced stuff
 
-The board is also meant to be used with the 8088 board. To that end it provides a second display mode which is compatible with IBM MDA display. This mode uses an IBM 8x16 font and recognizes all MDA attributes (bright, invert, underline, blink). This mode is not yet fully supported - stay tuned for future releases.
+The board is also meant to be used with the 8088 board. To that end it provides a second display mode which is compatible with IBM MDA display. This mode uses an IBM 8x16 font and recognizes all MDA attributes (bright, invert, underline, blink).
 
-There is a second connector on the board labeled `INPUT`. It is meant for daisy-chaining a secondary video board which is in a planning stage.
+There is a second connector on the board labeled `INPUT`. It is meant for daisy-chaining a secondary video board [when it is developed :)]. When a secondary board is connected, the video outputs of the primary board are tristated. This way the two cards can share the same VGA output connector.
+
+The Propeller emits a 50 Hz signal on one of the pins. This signal is very useful if you want to replace the original power supply with a modern one. Besides various voltages, the original PSU supplies a 50 Hz signal, which modern PSUs do not. You can now easily overcome this problem by shorting the JP2 jumper on the VGA interface which will then provide the needed 50 Hz signal to the mainboard. 
