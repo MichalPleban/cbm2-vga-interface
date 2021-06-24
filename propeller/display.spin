@@ -10,9 +10,9 @@ PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointe
               longfill(@src_addr_1, _pointer_1, 1)
               longfill(@src_addr_2, _pointer_2, 1)
               longfill(@src_addr_3, _pointer_3, 1)
-              longfill(@cursor_blink, _config+3, 1)
-              longfill(@cursor_mode, _config+5, 1)
-              longfill(@blink_ptr, _config+4, 1)
+              longfill(@cursor_blink, _config+3*4, 1)
+              longfill(@cursor_mode, _config+5*4, 1)
+              longfill(@blink_ptr, _config+4*4, 1)
               cognew(@cog, 0)
 
               return

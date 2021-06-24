@@ -7,7 +7,7 @@ VAR
               long  frame_buffer_2[640]
               long  frame_buffer_3[640]
               long  pointer_1, pointer_2, pointer_3
-              long  config[6]
+              long  config[8]
               byte  cbm_screen[2048]
               byte  ibm_screen[4096]
 
@@ -40,7 +40,9 @@ PRI init | x, y
               config[2] := 0    ' Graphics mode
               config[3] := 0    ' Cursor blink indicator
               config[4] := 0    ' Character blink indicator
-              config[5] := $40  ' Cursor mode
+              config[5] := 0    ' Cursor mode
+              config[6] := 0    ' German mode
+              config[7] := 0    ' Alternate font
               longfill(@cbm_screen, $20202020, 500)
               longfill(@ibm_screen, $07200720, 1000)
 

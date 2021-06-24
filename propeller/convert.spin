@@ -12,6 +12,8 @@ PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointe
               longfill(@mode_ptr, _config+1*4, 1)
               longfill(@graph_ptr, _config+2*4, 1)
               longfill(@blink_ptr, _config+4*4, 1)
+              longfill(@german_ptr, _config+6*4, 1)
+              longfill(@altfont_ptr, _config+7*4, 1)
               cognew(@cog, 0)
 
               return
@@ -66,6 +68,16 @@ cbm_line
               add src_ptr, char_number
               mov font_start, cbm_font
               mov char_count, #40
+
+              ' Test if German font needs to be displayed
+              rdlong tmp_1, german_ptr
+              rdlong tmp_2, altfont_ptr
+              and tmp_1, #1                      wz
+              if_z  jmp #:loop
+              and tmp_2, #1                      wz
+              if_nz jmp #:loop
+              add font_start, font_size
+
 :loop
               mov display_xor, #0
               mov display_or, #0
@@ -286,6 +298,10 @@ frame_buffer  long 0
 cbm_font      long 0
 ibm_font      long 0
 ptr_addr      long 0
+
+german_ptr    long 0
+altfont_ptr   long 0
+font_size     long 4096
 
 cursor_addr   long 0
 cursor_show   long 0

@@ -5,6 +5,8 @@ PUB start(_cbm_screen, _config)
               longfill(@graph_ptr, _config+2*4, 1)
               longfill(@mode_ptr, _config+1*4, 1)
               longfill(@cursor_mode, _config+5*4, 1)
+              longfill(@german_ptr, _config+6*4, 1)
+              longfill(@altfont_ptr, _config+7*4, 1)
               cognew(@cog, 0)
 
               return
@@ -53,6 +55,10 @@ crtc_regwr
               jmp #cog
 
 crtc_valwr
+              cmp crtc_register, #02        wz
+              if_e  jmp #:crtc_02
+              cmp crtc_register, #12        wz
+              if_e  jmp #:crtc_12
               cmp crtc_register, #10        wz
               if_e  jmp #:crtc_10
               cmp crtc_register, #14        wz
@@ -65,10 +71,11 @@ crtc_valwr
               mov bus_data, cursor_hi
               shl bus_data, #8
               or bus_data, cursor_lo
-              wrword bus_data, cursor_pos
+              wrlong bus_data, cursor_pos
               jmp #cog
 
 :crtc_14
+              and bus_data, #$07
               mov cursor_hi, bus_data
               jmp #:cursor
 
@@ -77,18 +84,25 @@ crtc_valwr
               wrlong bus_data, cursor_mode
               jmp #:cursor
 
+:crtc_02
+              cmp bus_data, #$50            wz
+              if_e  mov bus_data, #1
+              if_ne mov bus_data, #0
+              wrlong bus_data, german_ptr
+              jmp #cog
+
+:crtc_12
+              mov altfont_value, bus_data
+              and altfont_value, #$10
+              shr altfont_value, #4
+              wrlong altfont_value, altfont_ptr
+              jmp #cog
+
 tpi_write
               test bus_data, #$10           wz
               if_z  mov bus_data, #0
               if_nz mov bus_data, #1
-              wrword bus_data, graph_ptr
-              jmp #cog
-
-:tmp
-              mov cbm_ptr, cbm_screen
-              and bus_addr, tmp
-              add cbm_ptr, bus_addr
-              wrbyte bus_data, cbm_ptr
+              wrlong bus_data, graph_ptr
               jmp #cog
 
 cbm_screen    long 0
@@ -106,9 +120,11 @@ graph_ptr     long 0
 mode_ptr      long 0
 mode_value    long 0
 
-cursor_mode   long 0
+german_ptr    long 0
+altfont_ptr   long 0
+altfont_value long 0
 
-tmp           long $07FF
+cursor_mode   long 0
 
 bus_addr      res 1
 bus_data      res 1
