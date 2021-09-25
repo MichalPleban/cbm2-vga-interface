@@ -2,7 +2,7 @@ CON
               CLOCK = $1423D70A            ' 25.175 MHz
 
 
-PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointer_2, _pointer_3, _config)
+PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointer_2, _pointer_3, _splash, _config)
 
               longfill(@frame_start_1, _frame_buffer_1, 1)
               longfill(@frame_start_2, _frame_buffer_2, 1)
@@ -10,9 +10,11 @@ PUB start(_frame_buffer_1, _frame_buffer_2, _frame_buffer_3, _pointer_1, _pointe
               longfill(@src_addr_1, _pointer_1, 1)
               longfill(@src_addr_2, _pointer_2, 1)
               longfill(@src_addr_3, _pointer_3, 1)
+              longfill(@splash_start, _splash, 1)
               longfill(@cursor_blink, _config+3*4, 1)
               longfill(@cursor_mode, _config+5*4, 1)
               longfill(@blink_ptr, _config+4*4, 1)
+              longfill(@finished_ptr, _config+9*4, 1)
               cognew(@cog, 0)
 
               return
@@ -33,7 +35,12 @@ cog
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 picture
-'              call #external
+              call #external
+
+              ' If the computer is not initialized, display splash screen
+              rdlong finished_val, finished_ptr
+              cmp finished_val, #0              wz
+              if_z  jmp #splash
 
               ' Prefill three buffer frames
               mov trans_addr, #0
@@ -202,6 +209,52 @@ external_ret
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+splash
+
+              ' Vertical back porch
+              mov line_count, #33+192
+              call #blank_lines
+
+              mov frame_ptr, splash_start
+
+              ' Draw lines of the splash screen
+              mov line_count, #96
+
+:line
+              mov vscl, #48+272        ' Horizontal back porch
+              waitvid color_sync, #0
+
+              sub frame_ptr, #4
+              mov char_count, #6
+              mov vscl, vscl_pixels
+:loop
+              add frame_ptr, #4
+              rdlong frame_value, frame_ptr
+              waitvid color_splash, frame_value
+              djnz char_count, #:loop
+
+              mov vscl, #16+272        ' Horizontal front porch
+              waitvid color_sync, #0
+              mov vscl, #96            ' Horizontal sync
+              waitvid color_sync, #2
+
+              add frame_ptr, #4
+
+              djnz line_count, #:line
+
+              ' Vertical front porch
+              mov line_count, #10+192
+              call #blank_lines
+
+              ' Vertical sync
+              mov line_count, #2
+              call #vsync_lines
+
+              jmp #picture
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
 frqa_value    long CLOCK
 
               ' VSCFG initialization value:
@@ -229,7 +282,8 @@ vscl_sync     long %000000000000_00000000_000000000000
 color_sync    long $00010203
 
 color_test    long $FF035703
-pixels_test   long $FF55AA00
+
+color_splash  long $FFAB5703
 
 external_test long $40000000
 
@@ -240,6 +294,7 @@ frame_start_3 long 0
 src_addr_1    long 0
 src_addr_2    long 0
 src_addr_3    long 0
+splash_start  long 0
 
 cursor_blink  long 0
 cursor_cnt    long 0
@@ -250,14 +305,15 @@ blink_ptr     long 0
 blink_value   long 0
 blink_cnt     long 0
 
+finished_ptr  long 0
+finished_val  long 0
+
 segment_count res 1
 line_count    res 1
 char_count    res 1
 
-color_ptr     res 1
 frame_ptr     res 1
 
-color_value   res 1
 frame_value   res 1
 
 trans_addr    res 1

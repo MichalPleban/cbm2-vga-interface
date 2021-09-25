@@ -8,6 +8,7 @@ PUB start(_cbm_screen, _config)
               longfill(@german_ptr, _config+6*4, 1)
               longfill(@altfont_ptr, _config+7*4, 1)
               longfill(@invert_ptr, _config+8*4, 1)
+              longfill(@finish_ptr, _config+9*4, 1)
               cognew(@cog, 0)
 
               return
@@ -45,6 +46,8 @@ cog
               wrbyte bus_data, cbm_ptr
               cmp bus_addr, #0              wz
               if_e  wrbyte mode_value, mode_ptr
+              cmp bus_data, #$20            wz
+              if_ne wrbyte finish_value, finish_ptr
               jmp #cog
 
 io_write
@@ -133,6 +136,9 @@ cursor_mode   long 0
 
 invert_ptr    long 0
 invert_value  long 0
+
+finish_ptr    long 0
+finish_value  long 1
 
 bus_addr      res 1
 bus_data      res 1

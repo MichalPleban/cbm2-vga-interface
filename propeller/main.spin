@@ -7,7 +7,7 @@ VAR
               long  frame_buffer_2[640]
               long  frame_buffer_3[640]
               long  pointer_1, pointer_2, pointer_3
-              long  config[9]
+              long  config[10]
               byte  cbm_screen[2048]
               byte  ibm_screen[4096]
 
@@ -25,7 +25,7 @@ PUB main
 
 PRI start
 
-              display.start(@frame_buffer_1, @frame_buffer_2, @frame_buffer_3, @pointer_1, @pointer_2, @pointer_3, @config)
+              display.start(@frame_buffer_1, @frame_buffer_2, @frame_buffer_3, @pointer_1, @pointer_2, @pointer_3, @splash_screen, @config)
               convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_1, @pointer_1, @config)
               convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_2, @pointer_2, @config)
               convert.start(@cbm_screen, @cbm_font, @ibm_screen, @ibm_font, @frame_buffer_3, @pointer_3, @config)
@@ -44,6 +44,7 @@ PRI init | x, y
               config[6] := 0    ' German mode
               config[7] := 0    ' Alternate font
               config[8] := 0    ' Screen invert
+              config[9] := 0    ' Hide splash screen
               longfill(@cbm_screen, $20202020, 500)
               longfill(@ibm_screen, $07200720, 1000)
 
@@ -72,3 +73,4 @@ DAT
 cbm_font      file "cbm_us_8x16.bin"
               file "cbm_din_8x16.bin"
 ibm_font      file "IBM_VGA_8x16.bin"
+splash_screen file "splash.bin"
