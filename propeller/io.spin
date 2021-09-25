@@ -7,6 +7,7 @@ PUB start(_cbm_screen, _config)
               longfill(@cursor_mode, _config+5*4, 1)
               longfill(@german_ptr, _config+6*4, 1)
               longfill(@altfont_ptr, _config+7*4, 1)
+              longfill(@invert_ptr, _config+8*4, 1)
               cognew(@cog, 0)
 
               return
@@ -96,6 +97,10 @@ crtc_valwr
               and altfont_value, #$10
               shr altfont_value, #4
               wrlong altfont_value, altfont_ptr
+              mov invert_value, bus_data
+              and invert_value, #$20
+              shr invert_value, #5
+              wrlong invert_value, invert_ptr
               jmp #cog
 
 tpi_write
@@ -125,6 +130,9 @@ altfont_ptr   long 0
 altfont_value long 0
 
 cursor_mode   long 0
+
+invert_ptr    long 0
+invert_value  long 0
 
 bus_addr      res 1
 bus_data      res 1

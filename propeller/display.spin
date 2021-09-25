@@ -33,7 +33,7 @@ cog
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 picture
-              call #external
+'              call #external
 
               ' Prefill three buffer frames
               mov trans_addr, #0

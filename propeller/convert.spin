@@ -14,6 +14,7 @@ PUB start(_cbm_screen, _cbm_font, _ibm_screen, _ibm_font, _frame_buffer, _pointe
               longfill(@blink_ptr, _config+4*4, 1)
               longfill(@german_ptr, _config+6*4, 1)
               longfill(@altfont_ptr, _config+7*4, 1)
+              longfill(@invert_ptr, _config+8*4, 1)
               cognew(@cog, 0)
 
               return
@@ -39,9 +40,9 @@ cog
               mov dst_ptr, frame_buffer
 
               ' Read cursor position and visibility
-              rdlong crsr_visible, cursor_show
+              rdlong tmp_1, cursor_show
               rdlong blink_visible, blink_ptr
-              and crsr_visible, #1                wz
+              and tmp_1, #1                      wz
               if_nz rdlong cursor_ptr, cursor_addr
               if_z  mov cursor_ptr, #0
               if_z  sub cursor_ptr, #1
@@ -64,6 +65,7 @@ cog
               ' Draw a whole line of 80 characters (Commodore)
 cbm_line
               rdlong do_graph, graph_ptr
+              rdlong do_invert, invert_ptr
               mov src_ptr, cbm_screen
               add src_ptr, char_number
               mov font_start, cbm_font
@@ -72,14 +74,18 @@ cbm_line
               ' Test if German font needs to be displayed
               rdlong tmp_1, german_ptr
               rdlong tmp_2, altfont_ptr
-              and tmp_1, #1                      wz
+              and tmp_1, #1                         wz
               if_z  jmp #:loop
-              and tmp_2, #1                      wz
+              and tmp_2, #1                         wz
               if_nz jmp #:loop
               add font_start, font_size
 
 :loop
-              mov display_xor, #0
+              ' Handle screen invert
+              cmp do_invert, #0                     wz
+              if_e  mov display_xor, #0
+              if_ne mov display_xor, ptr_null
+
               mov display_or, #0
 
               ' Read two bytes
@@ -90,10 +96,10 @@ cbm_line
 
               ' Handle cursor display
               cmp char_number, cursor_ptr           wz
-              if_z  mov display_xor, char_mask_1
+              if_z  xor display_xor, char_mask_1
               add char_number, #1
               cmp char_number, cursor_ptr           wz
-              if_z  mov display_xor, char_mask_2
+              if_z  xor display_xor, char_mask_2
               add char_number, #1
 
               ' Handle character reverse
@@ -308,6 +314,8 @@ cursor_show   long 0
 
 blink_ptr     long 0
 
+invert_ptr    long 0
+
 dst_sub       long 2556
 ptr_null      long $FFFFFFFF
 char_mask_1   long $00005555
@@ -328,7 +336,6 @@ font_start    res 1
 font_ptr_1    res 1
 font_ptr_2    res 1
 
-crsr_visible  res 1
 cursor_ptr    res 1
 
 blink_visible res 1
@@ -363,6 +370,8 @@ display_and   res 1
 display_or    res 1
 
 char_number   res 1
+
+do_invert     res 1
 
 tmp_1         res 1
 tmp_2         res 1
