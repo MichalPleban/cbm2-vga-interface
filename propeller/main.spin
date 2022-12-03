@@ -64,9 +64,9 @@ PRI clock
               dira[28] := 1
               repeat
                   outa[28] := 1
-                  waitcnt(cnt + clkfreq / 100)
+                  waitcnt(cnt + clkfreq / 120)
                   outa[28] := 0
-                  waitcnt(cnt + clkfreq / 100)
+                  waitcnt(cnt + clkfreq / 120)
 
 DAT
 
